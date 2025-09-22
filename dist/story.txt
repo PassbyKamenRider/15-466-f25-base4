@@ -1,0 +1,22 @@
+-> start
+Hello, @! Welcome to this story.
++ Go to the forest -> forest
++ Visit the village -> village
+
+-> forest
+You walk into the dark forest. It's quiet...
++ Keep walking -> deep_forest
++ Return to start -> start
+
+-> village
+The village is full of life.
++ Talk to the elder -> elder
++ Go back -> start
+
+-> elder
+Blhablhablha
++ Go back -> start
++ Go to the forest -> forest
+
+-> deep_forest
+You are lost in the forest. The End.

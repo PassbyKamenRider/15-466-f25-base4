@@ -3,6 +3,7 @@
 #include "Scene.hpp"
 #include "Sound.hpp"
 #include "Text.hpp"
+#include "Story.hpp"
 
 #include <glm/glm.hpp>
 
@@ -35,4 +36,11 @@ struct PlayMode : Mode {
 	//font:
 	Text text1;
 	Text text2;
+	Text text3;
+
+	Story story;
+	int currentOption = 0;
+	std::string userName;
+
+	std::string ReplaceUsername(const std::string& text);
 };
