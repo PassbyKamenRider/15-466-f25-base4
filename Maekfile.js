@@ -27,6 +27,7 @@ if (maek.OS === "windows") {
 	maek.options.CPPFlags.push(
 		`/O2`, //optimize
 		`/D_USE_MATH_DEFINES`, //make sure M_PI exists
+		"/utf-8", //source files are utf-8
 		//include paths for nest libraries:
 		`/I${NEST_LIBS}/SDL3/include`,
 		`/I${NEST_LIBS}/glm/include`,
@@ -156,7 +157,8 @@ const game_names = [
 	//maek.CPP('ColorTextureProgram.cpp'),  //not used right now, but you might want it
 	maek.CPP('Sound.cpp'),
 	maek.CPP('load_wav.cpp'),
-	maek.CPP('load_opus.cpp')
+	maek.CPP('load_opus.cpp'),
+	maek.CPP('Text.cpp')
 ];
 
 const common_names = [
