@@ -58,19 +58,14 @@ A nightmare, you thought.
 Yet a faint sense of presence lingers in your home.
 
 -> goodbye
-You went to sleep.
-When you wake up, Your Best Pal.EXE has disappeared.
-You searched online but found nothing.
-What happned? You'll never know.
+You went to sleep.  
+When you wake, Your Best Pal.EXE has disappeared.  
+You search online but find nothing.  
+What happened? You’ll never know.  
+Until one night, a whisper drifts through the darkness:  
+"@, we are the best pal… forever."
 
 NORMAL END
-
--> end
-Your Best Pal.EXE has disappeared.
-You searched online but found nothing.
-What was it? You’ll never know.
-
-THE END
 
 -> accept
 You press your hand fully against the screen.  
