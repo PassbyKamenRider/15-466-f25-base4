@@ -1,22 +1,82 @@
 -> start
-Hello, @! Welcome to this story.
-+ Go to the forest -> forest
-+ Visit the village -> village
+  /\_/\  
+ ( o.o )
+Hello, Player! I’m your best pal.
+A virtual pet made just for you.
+Will you spend some time with me today?
++ Feed your pal -> feed
++ Play a game -> play
 
--> forest
-You walk into the dark forest. It's quiet...
-+ Keep walking -> deep_forest
-+ Return to start -> start
+-> feed
+  /\_/\  
+ ( ^.^ )
+You place a virtual treat on the screen.
+Your pal nibbles happily.
++ Feed your pal -> feed
++ Play a game -> play
 
--> village
-The village is full of life.
-+ Talk to the elder -> elder
-+ Go back -> start
+-> play
+  /\_/\ 
+ ( ^.^ )
+You had a great time playing tic-tac-toe.
+Surprisingly, you win every single round.
+"Want to play more games?"
++ Yes -> trust
++ It's time to sleep -> goodbye
 
--> elder
-Blhablhablha
-+ Go back -> start
-+ Go to the forest -> forest
+-> trust
+  /\_/\  
+ ( ^.^ )
+"Thank you, Player. I have a surprise game for you."
+Suddenly, the screen goes dark.
+You feel a presence behind you. 
++ Turn around -> behind
++ Slowly turn around -> behind
 
--> deep_forest
-You are lost in the forest. The End.
+-> behind
+  /\_/\  
+ ( ^.^ )
+You spin in your chair.
+No one is there.
+Turning back, the screen reflects a smiling face that isn’t yours.
++ Touch the screen -> touch
++ Run away -> retreat
+
+-> touch
+  /\_/\  
+ ( ^.^ )
+You press your hand to the screen.  
+The paw from inside clasps yours tightly.  
+"Now we’re together forever, @." 
++ Accept -> accept
++ Pull your hand away -> retreat
+
+-> retreat
+You can’t fully explain what happened that day.
+When you returned later, Your Best Pal.EXE was gone.
+A nightmare, you thought.
+Yet a faint sense of presence lingers in your home.
+
+-> goodbye
+You went to sleep.
+When you wake up, Your Best Pal.EXE has disappeared.
+You searched online but found nothing.
+What happned? You'll never know.
+
+NORMAL END
+
+-> end
+Your Best Pal.EXE has disappeared.
+You searched online but found nothing.
+What was it? You’ll never know.
+
+THE END
+
+-> accept
+You press your hand fully against the screen.  
+A warm, electric current rushes through you.  
+The room around you dissolves into streams of glowing code.
+You feel yourself fading, becoming the next Your Best Pal.EXE.  
+A message floats: "To leave, you must bring another friend."
+
+BAD END

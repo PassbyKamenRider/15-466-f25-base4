@@ -2,6 +2,7 @@
 // reference: https://github.com/cmu15466-gsilvera/15-466-f22-base4 for clearing buffer to reload text
 
 #include "Text.hpp"
+#include <sstream>
 
 Character Character::Load(hb_codepoint_t glyph_id, FT_Face face) {
     FT_Load_Glyph(face, glyph_id, FT_LOAD_RENDER);
@@ -20,7 +21,7 @@ Character Character::Load(hb_codepoint_t glyph_id, FT_Face face) {
         tex,
         glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
         glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-        static_cast<unsigned int>(face->glyph->advance.x)
+        (unsigned int) (face->glyph->advance.x)
     );
 
     return ch;
@@ -34,7 +35,7 @@ Text::Text(float font_size) {
     if (FT_New_Face(ft, data_path("SourceHanSansSC-VF.ttf").c_str(), 0, &typeface))
         throw std::runtime_error("FT_New_Face failed");
 
-    FT_Set_Pixel_Sizes(typeface, 0, static_cast<FT_UInt>(font_size));
+    FT_Set_Pixel_Sizes(typeface, 0, (FT_UInt) (font_size));
 
     hb_font = hb_ft_font_create(typeface, nullptr);
     hb_buffer = hb_buffer_create();
@@ -76,15 +77,16 @@ Text::Text(float font_size) {
 }
 
 void Text::Set_Text(const std::string &str) {
-    text_content = str;
-    update_hb_buffer();
+    lines.clear();
+    std::stringstream ss(str);
+    std::string line;
+    while (std::getline(ss, line, '\n')) {
+        lines.push_back(line);
+    }
 }
 
-void Text::update_hb_buffer() {
-    hb_buffer_clear_contents(hb_buffer);
-    hb_buffer_add_utf8(hb_buffer, text_content.c_str(), -1, 0, -1);
-    hb_buffer_guess_segment_properties(hb_buffer);
-    hb_shape(hb_font, hb_buffer, nullptr, 0);
+int Text::GetLineCount() {
+    return (int) lines.size();
 }
 
 void Text::Render_Text(float x, float y, glm::vec2 window_size, glm::vec3 color) {
@@ -98,44 +100,56 @@ void Text::Render_Text(float x, float y, glm::vec2 window_size, glm::vec3 color)
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(VAO);
 
-    unsigned int len = hb_buffer_get_length(hb_buffer);
-    auto* info = hb_buffer_get_glyph_infos(hb_buffer, nullptr);
-    auto* pos_glyph = hb_buffer_get_glyph_positions(hb_buffer, nullptr);
+    float line_height = (float) (typeface->size->metrics.height >> 6);
 
-    for (unsigned int i = 0; i < len; i++) {
-        hb_codepoint_t glyph_id = info[i].codepoint;
+    for (size_t l = 0; l < lines.size(); l++) {
+        hb_buffer_clear_contents(hb_buffer);
+        hb_buffer_add_utf8(hb_buffer, lines[l].c_str(), -1, 0, -1);
+        hb_buffer_guess_segment_properties(hb_buffer);
+        hb_shape(hb_font, hb_buffer, nullptr, 0);
 
-        if (cache.find(glyph_id) == cache.end()) {
-            cache[glyph_id] = Character::Load(glyph_id, typeface);
+        unsigned int len = hb_buffer_get_length(hb_buffer);
+        auto* info = hb_buffer_get_glyph_infos(hb_buffer, nullptr);
+        auto* pos_glyph = hb_buffer_get_glyph_positions(hb_buffer, nullptr);
+
+        float pen_x = x;
+        float pen_y = y - (float) (l) * line_height;
+
+        for (unsigned int i = 0; i < len; i++) {
+            hb_codepoint_t glyph_id = info[i].codepoint;
+
+            if (cache.find(glyph_id) == cache.end()) {
+                cache[glyph_id] = Character::Load(glyph_id, typeface);
+            }
+
+            Character &ch = cache[glyph_id];
+
+            float x_offset = (float) (pos_glyph[i].x_offset) / 64.0f;
+            float y_offset = (float) (pos_glyph[i].y_offset) / 64.0f;
+
+            float xpos = pen_x + ch.Bearing.x + x_offset;
+            float ypos = pen_y - (ch.Size.y - ch.Bearing.y) + y_offset;
+            float w = (float) (ch.Size.x);
+            float h = (float) (ch.Size.y);
+            float vertices[6][4] = {
+                { xpos,     ypos + h,   0.0f, 0.0f },            
+                { xpos,     ypos,       0.0f, 1.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+
+                { xpos,     ypos + h,   0.0f, 0.0f },
+                { xpos + w, ypos,       1.0f, 1.0f },
+                { xpos + w, ypos + h,   1.0f, 0.0f }           
+            };
+
+            glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            pen_x += (float) (ch.Advance >> 6) + x_offset;
+            pen_y += y_offset;
         }
-
-        Character &ch = cache[glyph_id];
-
-        float x_offset = static_cast<float>(pos_glyph[i].x_offset) / 64.0f;
-        float y_offset = static_cast<float>(pos_glyph[i].y_offset) / 64.0f;
-
-        float xpos = x + ch.Bearing.x + x_offset;
-        float ypos = y - (ch.Size.y - ch.Bearing.y) + y_offset;
-        float w = static_cast<float>(ch.Size.x);
-        float h = static_cast<float>(ch.Size.y);
-        float vertices[6][4] = {
-            { xpos,     ypos + h,   0.0f, 0.0f },            
-            { xpos,     ypos,       0.0f, 1.0f },
-            { xpos + w, ypos,       1.0f, 1.0f },
-
-            { xpos,     ypos + h,   0.0f, 0.0f },
-            { xpos + w, ypos,       1.0f, 1.0f },
-            { xpos + w, ypos + h,   1.0f, 0.0f }           
-        };
-
-        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        x += static_cast<float>(ch.Advance >> 6) + x_offset;
-        y += y_offset;
     }
 
     glBindVertexArray(0);

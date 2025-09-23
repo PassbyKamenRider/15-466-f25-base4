@@ -33,14 +33,13 @@ struct PlayMode : Mode {
 	//camera:
 	Scene::Camera *camera = nullptr;
 
-	//font:
-	Text text1;
-	Text text2;
-	Text text3;
+	//text:
+	Text mainText;
+	Text optionText1;
+	Text optionText2;
 
 	Story story;
 	int currentOption = 0;
 	std::string userName;
-
-	std::string ReplaceUsername(const std::string& text);
+	std::string ReplaceUsername(std::string text);
 };

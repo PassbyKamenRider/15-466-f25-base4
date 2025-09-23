@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-bool Story::LoadFromFile(const std::string& path) {
+bool Story::LoadFromFile(std::string path) {
     std::ifstream ifs(path);
     if (!ifs.is_open()) {
         std::cerr << "Failed to open story file: " << path << std::endl;
@@ -34,37 +34,27 @@ bool Story::LoadFromFile(const std::string& path) {
         }
         else if (line.rfind("+", 0) == 0) {
             size_t arrow_pos = line.find("->");
-            std::string label = line.substr(1, arrow_pos - 1);
+            std::string name = line.substr(1, arrow_pos - 1);
             std::string next  = line.substr(arrow_pos + 2);
-            current_node.options.push_back({ label, next });
+            current_node.options.push_back({ name, next });
         }
         else {
-            if (!current_node.text.empty()) current_node.text += "\n";
+            current_node.text += "\n";
             current_node.text += line;
         }
     }
 
-    if (!current_state_id.empty()) {
-        nodes[current_state_id] = current_node;
-    }
+    nodes[current_state_id] = current_node;
 
     return true;
 }
 
-const StoryNode* Story::GetCurrentNode() const {
+StoryNode* Story::GetCurrentNode() {
     auto it = nodes.find(current_state);
     if (it != nodes.end()) return &it->second;
     return nullptr;
 }
 
-bool Story::JumpTo(const std::string& state_id) {
-    if (nodes.find(state_id) != nodes.end()) {
-        current_state = state_id;
-        return true;
-    }
-    return false;
-}
-
-void Story::Reset() {
-    current_state = start_state;
+void Story::JumpTo(std::string stateName) {
+    current_state = stateName;
 }

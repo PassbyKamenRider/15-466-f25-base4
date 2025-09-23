@@ -1,22 +1,27 @@
-# (TODO: your game's title)
+# Your Best Pal.EXE
 
-Author: (TODO: your name)
+## Author:
+Yifan Jiang(yifanj3)
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+## Design:
+Your Best Pal.EXE is a psychological horror text-based game with meta elements that creates an immersive thrilling experience for players.
 
-Text Drawing: (TODO: how does the text drawing in this game work? Is text precomputed? Rendered at runtime? What files or utilities are involved?)
+## Text Drawing:
+First, `Character::Load` in `Text.cpp` uses FreeType to read the ttf font file, rasterize codepoints into bitmaps, and upload them as OpenGL textures, caching them for reuse. Then, `Character::Render_Text` uses HarfBuzz to shape characters in each line to glyphs and draws the cached textures as textured quads.
 
-Choices: (TODO: how does the game store choices and narrative? How are they authored? Anything nifty you want to point out?)
+## Choices:
+Choices and narrative are stored in `.txt` files using a custom format inspired by Ink. They are parsed at runtime and stored in a `Story` structure implemented in `Story.cpp`. A `Story` is composed of `StoryNodes`, each containing `text` and `options`. The game keeps track of the current node and the option selected, updating the story node dynamically as the player progresses.
 
-Screen Shot:
+## Screen Shot:
 
 ![Screen Shot](screenshot.png)
 
-How To Play:
+## How To Play:
+- `W/S` to switch between options
+- `Enter` to select an option
 
-(TODO: describe the controls and (if needed) goals/strategy.)
-
-Sources: (TODO: list a source URL for any assets you did not create yourself. Make sure you have a license for the asset.)
+## Sources:
+- Source Han Sans - https://github.com/adobe-fonts/source-han-sans
 
 This game was built with [NEST](NEST.md).
 

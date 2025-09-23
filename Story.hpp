@@ -3,7 +3,7 @@
 #include <unordered_map>
 
 struct StoryOption {
-    std::string label;
+    std::string name;
     std::string next;
 };
 
@@ -14,11 +14,10 @@ struct StoryNode {
 
 class Story {
 public:
-    bool LoadFromFile(const std::string& path);
+    bool LoadFromFile(std::string path);
 
-    const StoryNode* GetCurrentNode() const;
-    bool JumpTo(const std::string& state_id);
-    void Reset();
+    StoryNode* GetCurrentNode();
+    void JumpTo(std::string stateName);
 
 private:
     std::string start_state;

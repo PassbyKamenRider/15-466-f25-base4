@@ -33,13 +33,14 @@ Load< Scene > hexapod_scene(LoadTagDefault, []() -> Scene const * {
 	});
 });
 
-std::string GetUserNameCrossPlatform() {
+//
+std::string GetUserName() {
 	#ifdef _WIN32
-		char* buffer = nullptr;
-		size_t size = 0;
-		if (_dupenv_s(&buffer, &size, "USERNAME") == 0 && buffer != nullptr) {
-			std::string name(buffer);
-			free(buffer);
+		char* pValue = nullptr;
+		size_t len = 0;
+		if (_dupenv_s(&pValue, &len, "USERNAME") == 0 && pValue != nullptr) {
+			std::string name(pValue);
+			free(pValue);
 			return name;
 		}
 	#else
@@ -49,17 +50,15 @@ std::string GetUserNameCrossPlatform() {
 		return "Player";
 }
 
-std::string PlayMode::ReplaceUsername(const std::string& text) {
-    std::string result = text;
-    size_t pos = 0;
-    while ((pos = result.find('@', pos)) != std::string::npos) {
-        result.replace(pos, 1, userName);
-        pos += userName.size();
+std::string PlayMode::ReplaceUsername(std::string text) {
+    size_t pos = text.find('@');
+    if (pos != std::string::npos) {
+        text.replace(pos, 1, userName);
     }
-    return result;
+    return text;
 }
 
-PlayMode::PlayMode() : scene(*hexapod_scene), text1(32.f), text2(32.f), text3(32.f) {
+PlayMode::PlayMode() : scene(*hexapod_scene), mainText(32.f), optionText1(32.f), optionText2(32.f) {
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
 	camera = &scene.cameras.front();
@@ -68,14 +67,12 @@ PlayMode::PlayMode() : scene(*hexapod_scene), text1(32.f), text2(32.f), text3(32
 		throw std::runtime_error("Failed to load story");
 	}
 
-	userName = GetUserNameCrossPlatform();
+	userName = GetUserName();
 
 	const StoryNode* node = story.GetCurrentNode();
-	if (node) {
-		text1.Set_Text(ReplaceUsername(node->text));
-		if (node->options.size() > 0) text2.Set_Text(node->options[0].label);
-		if (node->options.size() > 1) text3.Set_Text(node->options[1].label);
-	}
+	mainText.Set_Text(ReplaceUsername(node->text));
+	optionText1.Set_Text(node->options[0].name);
+	optionText2.Set_Text(node->options[1].name);
 }
 
 PlayMode::~PlayMode() {
@@ -106,19 +103,21 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			down.pressed = true;
 			return true;
 		} else if (evt.key.key == SDLK_RETURN) {
-			const StoryNode* node = story.GetCurrentNode();
+			auto node = story.GetCurrentNode();
             if (node && currentOption < (int)node->options.size()) {
                 std::string next = node->options[currentOption].next;
-                if (story.JumpTo(next)) {
-                    const StoryNode* newNode = story.GetCurrentNode();
-                    if (newNode) {
-                        text1.Set_Text(newNode->text);
-                        if (newNode->options.size() > 0) text2.Set_Text(newNode->options[0].label);
-                        else text2.Set_Text("");
-                        if (newNode->options.size() > 1) text3.Set_Text(newNode->options[1].label);
-                        else text3.Set_Text("");
-                    }
-                }
+				story.JumpTo(next);
+                auto nextNode = story.GetCurrentNode();
+				if (nextNode) {
+					mainText.Set_Text(ReplaceUsername(nextNode->text));
+					if (nextNode->options.size() != 0) {
+						optionText1.Set_Text(nextNode->options[0].name);
+						optionText2.Set_Text(nextNode->options[1].name);
+					} else {
+						optionText1.Set_Text("");
+						optionText2.Set_Text("");
+					}
+				}
             }
 			return true;
 		}
@@ -153,21 +152,26 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	const StoryNode* node = story.GetCurrentNode();
-	if (node) {
-		text1.Render_Text(100, 650, glm::vec2(1280, 720), glm::vec3(1.0, 1.0, 1.0));
+	auto node = story.GetCurrentNode();
+	int lineCount = mainText.GetLineCount();
+	float lineHeight = 50.0f;
 
-		if (node->options.size() > 0) {
-			glm::vec3 color = (currentOption == 0) ? glm::vec3(1.0f, 1.0f, 0.0f)
-			                                      : glm::vec3(1.0f, 1.0f, 1.0f);
-			text2.Render_Text(100, 600, glm::vec2(1280, 720), color);
-		}
+	mainText.Render_Text(100, 650, glm::vec2(1280, 720), glm::vec3(1.0, 1.0, 1.0));
 
-		if (node->options.size() > 1) {
-			glm::vec3 color = (currentOption == 1) ? glm::vec3(1.0f, 1.0f, 0.0f)
-			                                      : glm::vec3(1.0f, 1.0f, 1.0f);
-			text3.Render_Text(100, 550, glm::vec2(1280, 720), color);
+	if (node->options.size() > 0) {
+		glm::vec3 color= glm::vec3(1.0f, 1.0f, 1.0f);
+		if (currentOption == 0) {
+			color = glm::vec3(1.0f, 1.0f, 0.0f);
 		}
+		optionText1.Render_Text(100, 650 - lineCount * lineHeight, glm::vec2(1280, 720), color);
+	}
+
+	if (node->options.size() > 1) {
+		glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
+		if (currentOption == 1) {
+			color = glm::vec3(1.0f, 1.0f, 0.0f);
+		}
+		optionText2.Render_Text(100, 600 - lineCount * lineHeight, glm::vec2(1280, 720), color);
 	}
 
 	GL_ERRORS();
